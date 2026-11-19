@@ -1,15 +1,28 @@
 
 const lecteur = document.getElementById("lecteur");
 
-// Lire les musiques et les effets
+let contexteAudio;
+
+function audio() {
+  if (!contexteAudio) {
+    contexteAudio = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  if (contexteAudio.state === "suspended") {
+    contexteAudio.resume();
+  }
+
+  return contexteAudio;
+}
+
 function jouer(nom) {
-  if (nom === "roulement") {
-    jouerRoulement();
+  if (nom === "couteau") {
+    jouerCouteau();
     return;
   }
 
-  if (nom === "couteau") {
-    jouerCouteau();
+  if (nom === "roulement") {
+    jouerRoulement();
     return;
   }
 
@@ -18,75 +31,20 @@ function jouer(nom) {
   lecteur.src = "sons/" + nom + ".mp3";
 
   lecteur.play().catch(() => {
-    alert("Impossible de lire ce son. Vérifie le dossier sons !");
+    alert("Fichier introuvable : sons/" + nom + ".mp3");
   });
 }
 
-// Arrêter les musiques
 function arreter() {
   lecteur.pause();
   lecteur.currentTime = 0;
 }
 
-// Créer un roulement de tambour de 3 secondes
-function jouerRoulement() {
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  const ctx = new AudioCtx();
-  const debut = ctx.currentTime;
-
-  for (let i = 0; i < 32; i++) {
-    const temps = i / 32;
-    const intervalle = 0.12 - temps * 0.085;
-    const t = debut + i * intervalle;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(90 + Math.random() * 35, t);
-
-    gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.16, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(t);
-    osc.stop(t + 0.1);
-  }
-
-  // Gros coup final
-  const t = debut + 2.85;
-  const final = ctx.createOscillator();
-  const volume = ctx.createGain();
-
-  final.type = "sine";
-  final.frequency.setValueAtTime(100, t);
-  final.frequency.exponentialRampToValueAtTime(35, t + 0.5);
-
-  volume.gain.setValueAtTime(0.7, t);
-  volume.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-
-  final.connect(volume);
-  volume.connect(ctx.destination);
-
-  final.start(t);
-  final.stop(t + 0.6);
-}
-
-// Créer un effet de couteau
 function jouerCouteau() {
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  const ctx = new AudioCtx();
+  const ctx = audio();
   const t = ctx.currentTime;
 
-  const buffer = ctx.createBuffer(
-    1,
-    ctx.sampleRate * 0.35,
-    ctx.sampleRate
-  );
-
+  const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
   const data = buffer.getChannelData(0);
 
   for (let i = 0; i < data.length; i++) {
@@ -98,20 +56,60 @@ function jouerCouteau() {
 
   const filtre = ctx.createBiquadFilter();
   filtre.type = "highpass";
-  filtre.frequency.value = 1200;
+  filtre.frequency.value = 1000;
 
   const volume = ctx.createGain();
   volume.gain.setValueAtTime(0.7, t);
-  volume.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+  volume.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
 
   bruit.connect(filtre);
   filtre.connect(volume);
   volume.connect(ctx.destination);
-
   bruit.start(t);
 }
 
-// Rejoindre le lobby
+function jouerRoulement() {
+  const ctx = audio();
+  const debut = ctx.currentTime;
+
+  for (let i = 0; i < 32; i++) {
+    const progression = i / 32;
+    const intervalle = 0.12 - progression * 0.085;
+    const t = debut + i * intervalle;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "triangle";
+    osc.frequency.value = 90 + Math.random() * 35;
+
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.16, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
+
+  const t = debut + 2.85;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(100, t);
+  osc.frequency.exponentialRampToValueAtTime(35, t + 0.5);
+
+  gain.gain.setValueAtTime(0.7, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 0.6);
+}
+
 function rejoindre() {
   const pseudo = document.getElementById("pseudo").value.trim();
   const message = document.getElementById("message");
@@ -121,5 +119,5 @@ function rejoindre() {
     return;
   }
 
-  message.textContent = "Bienvenue " + pseudo + " dans MYSTERY NIGHT ! 🌙";
+  message.textContent = "Bienvenue " + pseudo + " dans MYSTERY NIGHT !";
 }

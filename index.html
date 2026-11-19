@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MYSTERY NIGHT 🌙</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="container">
+    <h1>🌙 MYSTERY NIGHT</h1>
+    <p>Bienvenue dans le jeu du mystère...</p>
+
+    <section>
+      <h2>🎮 LOBBY</h2>
+      <input id="pseudo" placeholder="Entre ton pseudo">
+      <button onclick="rejoindre()">Rejoindre une partie</button>
+      <p id="message"></p>
+    </section>
+
+    <section>
+      <h2>🎵 MUSIQUES</h2>
+      <button onclick="jouer('hero')">Hero</button>
+      <button onclick="jouer('sherif')">Shérif</button>
+      <button onclick="jouer('meurtrier')">Meurtrier</button>
+      <button onclick="jouer('innocent')">Innocent</button>
+      <button onclick="jouer('couteau')">Couteau</button>
+      <button onclick="jouer('roulement')">Roulement</button>
+      <button onclick="arreter()">Arrêter</button>
+    </section>
+  </main>
+
+  <audio id="lecteur"></audio>
+  <script src="script.js"></script>
+
+</body>
+</html>
